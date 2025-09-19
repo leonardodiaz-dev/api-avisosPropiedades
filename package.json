@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "seed:ubigeo": "ts-node src/scripts/seedUbigeo.ts",
     "seed:caracteristicas": "ts-node src/scripts/seedCaracteristicas.ts",
     "seed:tipoPropiedades": "ts-node src/scripts/seedTipoPropiedad.ts",
-    "seed:usuarios":"ts-node src/scripts/seedUsuarios.ts",
-    "seed:propiedades":"ts-node  src/scripts/seedPropiedades.ts",
+    "seed:usuarios": "ts-node src/scripts/seedUsuarios.ts",
+    "seed:propiedades": "ts-node  src/scripts/seedPropiedades.ts",
     "seed:all": "npm run seed:ubigeo && npm run seed:caracteristicas && npm run seed:tipoPropiedades && npm run seed:usuarios && npm run seed:propiedades",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
