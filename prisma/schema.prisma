@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario        Int         @id @default(autoincrement())
+  nombre            String
+  apellidos         String
+  email             String      @unique
+  dni               String      @unique
+  tipo_usuario      TipoUsuario
+  celular           String
+  contrasena        String
+  mensajesEnviados  Mensaje[]   @relation("MensajesEnviados")
+  mensajesRecibidos Mensaje[]   @relation("MensajesRecibidos")
+  propiedades       Propiedad[]
+  favoritos         Favorito[]
+}
+
+model Mensaje {
+  id_mensaje     Int       @id @default(autoincrement())
+  mensaje        String
+  estado         Boolean   @default(true)
+  isLeido        Boolean   @default(false)
+  remitenteId    Int?
+  remitente      Usuario?  @relation("MensajesEnviados", fields: [remitenteId], references: [id_usuario])
+  contactoId     Int?
+  contacto       Contacto? @relation(fields: [contactoId], references: [id_contacto])
+  destinatarioId Int
+  destinatario   Usuario   @relation("MensajesRecibidos", fields: [destinatarioId], references: [id_usuario])
+  propiedadId    Int
+  propiedad      Propiedad @relation(fields: [propiedadId], references: [id_propiedad])
+  createdAt      DateTime  @default(now())
+}
+
+model Contacto {
+  id_contacto Int       @id @default(autoincrement())
+  nombre      String
+  dni         String
+  email       String
+  telefono    String
+  mensajes    Mensaje[]
+}
+
+model Tipo_Propiedad {
+  id_tipoPropiedad Int         @id @default(autoincrement())
+  nombre           String
+  propiedades      Propiedad[]
+}
+
+model Propiedad {
+  id_propiedad            Int                       @id @default(autoincrement())
+  titulo                  String
+  slug                    String?                    @unique
+  descripcion             String
+  precio                  Float
+  direccion               String
+  area_construida         Float?
+  area_total              Float
+  antiguedad              Int?
+  dormitorios             Int?
+  banos                   Int?
+  archivado               Boolean                   @default(false)
+  tipo_moneda             TipoMoneda
+  tipo_operacion          TipoOperacion
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  usuarioId               Int
+  usuario                 Usuario                   @relation(fields: [usuarioId], references: [id_usuario])
+  mensajes                Mensaje[]
+  tipoPropiedadId         Int
+  tipoPropiedad           Tipo_Propiedad            @relation(fields: [tipoPropiedadId], references: [id_tipoPropiedad])
+  imagenes                Imagen[]
+  favoritos               Favorito[]
+  distritoId              Int
+  distrito                Distrito                  @relation(fields: [distritoId], references: [id_distrito])
+  CaracteristicaPropiedad CaracteristicaPropiedad[]
+  Visualizacion           Visualizacion[]
+
+  @@index([usuarioId])
+  @@index([distritoId])
+  @@index([tipoPropiedadId])
+}
+
+model Visualizacion {
+  id_visualizacion Int       @id @default(autoincrement())
+  propiedadId      Int
+  fecha            DateTime  @default(now())
+  propiedad        Propiedad @relation(fields: [propiedadId], references: [id_propiedad])
+}
+
+model CaracteristicaPropiedad {
+  id               Int            @id @default(autoincrement())
+  propiedadId      Int
+  caracteristicaId Int
+  propiedad        Propiedad      @relation(fields: [propiedadId], references: [id_propiedad])
+  caracteristica   Caracteristica @relation(fields: [caracteristicaId], references: [id_caracteristica])
+}
+
+model Caracteristica {
+  id_caracteristica       Int                       @id @default(autoincrement())
+  nombre                  String
+  CaracteristicaPropiedad CaracteristicaPropiedad[]
+}
+
+model Imagen {
+  id_imagen   Int       @id @default(autoincrement())
+  url         String
+  propiedadId Int
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id_propiedad])
+}
+
+model Favorito {
+  id_favorito Int       @id @default(autoincrement())
+  usuarioId   Int
+  propiedadId Int
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id_usuario])
+  propiedad   Propiedad @relation(fields: [propiedadId], references: [id_propiedad])
+
+  @@unique([usuarioId, propiedadId])
+}
+
+model Departamento {
+  id_departamento Int         @id @default(autoincrement())
+  nombre          String
+  provincias      Provincia[]
+}
+
+model Provincia {
+  id_provincia   Int          @id @default(autoincrement())
+  nombre         String
+  departamentoId Int
+  departamento   Departamento @relation(fields: [departamentoId], references: [id_departamento])
+  distritos      Distrito[]
+}
+
+model Distrito {
+  id_distrito Int         @id @default(autoincrement())
+  nombre      String
+  provinciaId Int
+  provincia   Provincia   @relation(fields: [provinciaId], references: [id_provincia])
+  propiedades Propiedad[]
+}
+
+enum TipoUsuario {
+  Particular
+  Agente
+}
+
+enum TipoMoneda {
+  Soles
+  Dolares
+}
+
+enum TipoOperacion {
+  Venta
+  Alquiler
+}
